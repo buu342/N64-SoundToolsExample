@@ -13,9 +13,9 @@ set ERROR=0
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 :: Ultra folder (NO QUOTATIONS)
-set ROOT=C:\ultra
+set ROOT=D:\ultra
 :: Emulator ROM folder (QUOTATIONS REQUIRED)
-set ROMFOLDER="C:\Documents and Settings\Lourenço\Desktop\N64\Roms"
+set ROMFOLDER="D:\Documents and Settings\Lourenço\Desktop\N64\Roms"
 
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -39,7 +39,7 @@ goto fix2
 :fix1
 call :PainText 04 "Error locating the ultra folder."
 echo.
-call :PainText 04 "Please edit this batch file (line 13) to have the correct directory."
+call :PainText 04 "Please edit this batch file (line 16) to have the correct directory."
 echo.
 echo.
 pause
@@ -63,7 +63,7 @@ goto fix3
 IF NOT EXIST %ROMFOLDER% (
 call :PainText 04 "Error locating ROM folder."
 echo.
-call :PainText 04 "Please edit this batch file (line 15) to have the correct directory."
+call :PainText 04 "Please edit this batch file (line 18) to have the correct directory."
 echo.
 call :PainText 04 "if you ignore this error, the rom will not be moved after compilation."
 echo.
