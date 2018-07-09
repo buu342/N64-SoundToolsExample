@@ -4,14 +4,18 @@
 
 @echo off
 @chcp 1252
-
+setlocal enabledelayedexpansion
+set MOVEROM=1
+set ERROR=0
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ::                               Change Here                                    ::
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-set ROOT=D:\N64\ultra
-set ROMFOLDER="D:\Documents and Settings\Lourenço\Desktop\N64\Roms"
+:: Ultra folder (NO QUOTATIONS)
+set ROOT=C:\ultra
+:: Emulator ROM folder (QUOTATIONS REQUIRED)
+set ROMFOLDER="C:\Documents and Settings\LourenÃ§o\Desktop\N64\Roms"
 
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -23,9 +27,56 @@ for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1)
 
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-::                                Setup Make                                    ::
+::                            Check for folders                                 ::
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+IF NOT EXIST %ROOT% (
+goto fix1
+) ELSE (
+goto fix2
+)
+
+:fix1
+call :PainText 04 "Error locating the ultra folder."
+echo.
+call :PainText 04 "Please edit this batch file (line 13) to have the correct directory."
+echo.
+echo.
+pause
+exit
+
+:fix2
+for /F "delims=" %%a in ('@findstr /s /b "N64KITDIR" "Makefile" ') do set "n64kitdir=%%a"
+for /f "tokens=2 delims==" %%a in ("%n64kitdir%") do set "result=%%a"
+IF NOT EXIST %result% (
+call :PainText 04 "Error locating the n64sdk folder."
+echo.
+call :PainText 04 "Please edit your makefile to have the correct directory."
+echo.
+echo.
+pause
+exit
+)
+goto fix3
+
+:fix3
+IF NOT EXIST %ROMFOLDER% (
+call :PainText 04 "Error locating ROM folder."
+echo.
+call :PainText 04 "Please edit this batch file (line 15) to have the correct directory."
+echo.
+call :PainText 04 "if you ignore this error, the rom will not be moved after compilation."
+echo.
+echo.
+set MOVEROM=0
+)
+goto main
+
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                                Setup Make                                    ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:main
 call :PainText 09 "Setting up make for the N64"
 set gccdir=%ROOT%\gcc
 set PATH=%ROOT%\gcc\mipse\bin;%ROOT%\usr\sbin
@@ -67,6 +118,16 @@ call :PainText 0C "Running Make"
 echo.
 make
 
+if NOT exist *.n64 (
+move /-y *.o "out\bin\" >nul
+echo.
+call :PainText 04 "An error occured during compiation."
+echo.
+echo.
+pause
+exit
+)
+
 echo.
 call :PainText 0C "Running makemask"
 echo.
@@ -93,6 +154,12 @@ echo.
 ::                       Ask to move file to ROM folder                         ::
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+if !MOVEROM!==1 (
+goto choice
+) ELSE (
+goto finish
+)
+
 :choice
 set /P c=Move the ROM to the Project64 ROM Folder[Y/N]?
 if /I "%c%" EQU "Y" goto :move
@@ -103,6 +170,9 @@ goto :choice
 for /R "%~dp0out" %%f in (*.n64) do copy /y "%%f" %ROMFOLDER%
 call :PainText 0E "Done!"
 echo.
+goto finish
+
+:finish
 echo.
 pause
 exit
